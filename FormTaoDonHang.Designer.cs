@@ -135,11 +135,11 @@
             this.labelTieuDe.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.labelTieuDe.AutoSize = true;
             this.labelTieuDe.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelTieuDe.Location = new System.Drawing.Point(640, 12);
+            this.labelTieuDe.Location = new System.Drawing.Point(597, 12);
             this.labelTieuDe.Name = "labelTieuDe";
-            this.labelTieuDe.Size = new System.Drawing.Size(191, 29);
+            this.labelTieuDe.Size = new System.Drawing.Size(277, 29);
             this.labelTieuDe.TabIndex = 0;
-            this.labelTieuDe.Text = "TẠO HÓA ĐƠN";
+            this.labelTieuDe.Text = "TẠO HÓA ĐƠN HÀNG ";
             // 
             // panelThongTinChung
             // 

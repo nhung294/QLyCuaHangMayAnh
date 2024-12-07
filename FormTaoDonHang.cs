@@ -10,6 +10,7 @@ using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace BaiTapLon.Forms
 {
@@ -77,7 +78,7 @@ namespace BaiTapLon.Forms
         private void lamMoi()
         {
             DataTable dataTable = new DataTable();
-            dataTable = dataProcessor.DataReader("Select TenNV from NHANVIEN where MaNV = '" +  PhanQuyen.instance.MaNV + "'");
+            dataTable = dataProcessor.DataReader("Select TenNV from NHANVIEN where MaNV = '" + PhanQuyen.instance.MaNV + "'");
             textBoxSoHD.Text = sinhMaHoaDon();
             textBoxMaKH.Text = sinhMaKhachHang();
             dateTimePickerNgayBan.Value = DateTime.Now;
@@ -117,7 +118,6 @@ namespace BaiTapLon.Forms
             dataGridViewDSMatHang.Columns.Add("GiamGia", "Giảm giá");
             dataGridViewDSMatHang.Columns.Add("ThanhTien", "Thành tiền");
 
-
         }
         //Làm mới tìm kiếm
         private void lamMoiTimKiem()
@@ -141,15 +141,16 @@ namespace BaiTapLon.Forms
             textBoxMaHang.Enabled = false;
             buttonThemHoaDon.Enabled = false;
             buttonThem.Enabled = false;
+            buttonInHoaDon.Enabled = true;
         }
         //Làm mới danh mục mua hàng
         private void lamMoiMuaHang()
         {
             textBoxMaHang.Text = string.Empty;
-            textBoxGiamGia.Text= string.Empty;
+            textBoxGiamGia.Text = string.Empty;
             textBoxSoLuong.Text = string.Empty;
             textBoxTenHang.Text = string.Empty;
-            textBoxThanhTien.Text= string.Empty;
+            textBoxThanhTien.Text = string.Empty;
             textBoxDonGia.Text = string.Empty;
 
             textBoxMaHang.Focus();
@@ -201,13 +202,117 @@ namespace BaiTapLon.Forms
             else
             {
                 string sdt = textBoxDienThoai.Text;
-                if (sdt[0] == 0)
+                if (sdt[0] != '0')
                 {
-                    return false ;
+                    return false;
                 }
+
             }
             return true;
         }
+        // In hóa đơn
+        private void InHoaDon()
+        {
+            Excel.Application exApp = new Excel.Application();
+            Excel.Workbook exBook = exApp.Workbooks.Add();
+            Excel.Worksheet exSheet = exBook.Worksheets[1];
+
+            // Ghi dữ liệu vào ô A1
+            exSheet.Cells[2, 2].Font.Size = 13;
+            exSheet.Cells[2, 2].Font.Bold = true;
+            exSheet.Cells[2, 2].Font.Color = Color.Black;
+            exSheet.Cells[2, 2].Value = "Cửa hàng máy ảnh KYMA";
+            //Ghi dữ liệu vào ô A2
+            exSheet.Cells[3, 2].Font.Size = 13;
+            exSheet.Cells[3, 2].Font.Bold = true;
+            exSheet.Cells[3, 2].Font.Color = Color.Black;
+            exSheet.Cells[3, 2].Value = "Đống Đa -Hà Nội";
+            //In chữ hóa đơn
+            exSheet.Cells[5, 4].Font.Size = 13;
+            exSheet.Cells[5, 4].Font.Bold = true;
+            exSheet.Cells[5, 4].Font.Color = Color.Black;
+            exSheet.Cells[5, 4].Value = "HÓA ĐƠN BÁN HÀNG";
+
+            // Đặt độ rộng cho từng cột theo nhu cầu
+            exSheet.Range["B7:B12"].Font.Size = 11;
+            exSheet.Range["B7"].ColumnWidth = 14;
+            exSheet.Range["B8"].ColumnWidth = 14;
+            exSheet.Range["B9"].ColumnWidth = 14;
+            exSheet.Range["B10"].ColumnWidth = 20;
+            exSheet.Range["B11"].ColumnWidth = 14;
+            exSheet.Range["B12"].ColumnWidth = 14;
+
+            //tên các tiêu đề
+            exSheet.Cells[7, 2].Value = "Mã hóa đơn:";
+            exSheet.Cells[8, 2].Value = "Mã Nhân Viên:";
+            exSheet.Cells[9, 2].Value = "Tên nhân viên:";
+            exSheet.Cells[10, 2].Value = "Tên khách hàng:";
+            exSheet.Cells[11, 2].Value = "Địa chỉ:";
+            exSheet.Cells[12, 2].Value = "Điện thoại:";
+
+            //Điền thông tin chung
+            exSheet.Cells[7, 3].Value = textBoxSoHD.Text.Trim();
+            exSheet.Cells[8, 3].Value = textBoxMaNV.Text.Trim();
+            exSheet.Cells[9, 3].Value = textBoxTenNV.Text.Trim();
+            exSheet.Cells[10, 3].Value = textBoxTenKH.Text.Trim();
+            exSheet.Cells[11, 3].Value = textBoxDiaChi.Text.Trim();
+            exSheet.Cells[12, 3].Value = textBoxDienThoai.Text.Trim();
+
+            //Độ rộng tiêu đề
+            // độ rộng tiêu đề
+            exSheet.Range["B14:H14"].Font.Size = 11;
+            exSheet.Range["B14:H14"].Font.Bold = true;
+            exSheet.Range["B14"].ColumnWidth = 8;
+            exSheet.Range["C14"].ColumnWidth = 18;
+            exSheet.Range["D14"].ColumnWidth = 20;
+            exSheet.Range["E14"].ColumnWidth = 15;
+            exSheet.Range["F14"].ColumnWidth = 10;
+            exSheet.Range["G14"].ColumnWidth = 10;
+            exSheet.Range["H14"].ColumnWidth = 15;
+
+            //tên các tiêu đề
+            exSheet.Cells[14, 2].Value = "STT";
+            exSheet.Cells[14, 3].Value = "Mã hàng";
+            exSheet.Cells[14, 4].Value = "Tên hàng";
+            exSheet.Cells[14, 5].Value = "Đơn giá";
+            exSheet.Cells[14, 6].Value = "Số lượng";
+            exSheet.Cells[14, 7].Value = "Giảm giá";
+            exSheet.Cells[14, 8].Value = "Thành tiền";
+            //Điền thông tin hàng
+            int dong = 15;
+            for (int i = 0; i < dataGridViewDSMatHang.Rows.Count - 1; i++)
+            {
+                exSheet.Cells[dong + i, 2].Value = (i + 1).ToString();
+                exSheet.Cells[dong + i, 3].Value = dataGridViewDSMatHang.Rows[i].Cells[0].Value.ToString();
+                exSheet.Cells[dong + i, 4].Value = dataGridViewDSMatHang.Rows[i].Cells[1].Value.ToString();
+                exSheet.Cells[dong + i, 5].Value = dataGridViewDSMatHang.Rows[i].Cells[2].Value.ToString();
+                exSheet.Cells[dong + i, 6].Value = dataGridViewDSMatHang.Rows[i].Cells[3].Value.ToString();
+                exSheet.Cells[dong + i, 7].Value = dataGridViewDSMatHang.Rows[i].Cells[4].Value.ToString();
+                exSheet.Cells[dong + i, 8].Value = dataGridViewDSMatHang.Rows[i].Cells[5].Value.ToString();
+            }
+
+            //in tổng tiền
+            dong = dong + dataGridViewDSMatHang.Rows.Count;
+            exSheet.Cells[dong, 7].Value = "Tổng tiền:";
+            exSheet.Cells[dong, 8].Value = labelTongTien.Text;
+
+
+            // Hiển thị Excel
+            exApp.Visible = true;
+
+            // Lưu file
+            SaveFileDialog save = new SaveFileDialog();
+            save.Filter = "Excel Files|*.xlsx";
+            if (save.ShowDialog() == DialogResult.OK)
+            {
+                exBook.SaveAs(save.FileName);
+                MessageBox.Show("Lưu file thành công!");
+            }
+
+            // Đóng Excel
+            exApp.Quit();
+        }
+
         //Load form
         private void FormTaoDonHang_Load(object sender, EventArgs e)
         {
@@ -216,21 +321,21 @@ namespace BaiTapLon.Forms
             this.lamMoi();
         }
         //Thêm đơn hàng
-        private void buttonThemHoaDon_Click(object sender   , EventArgs e)
+        private void buttonThemHoaDon_Click(object sender, EventArgs e)
         {
-            if(textBoxTenKH.Text.Trim() == string.Empty)
+            if (textBoxTenKH.Text.Trim() == string.Empty)
             {
                 MessageBox.Show("Bạn chưa nhập tên khách hàng!");
                 textBoxTenKH.Focus();
                 return;
             }
-            if(textBoxDiaChi.Text.Trim() == string.Empty)
+            if (textBoxDiaChi.Text.Trim() == string.Empty)
             {
                 MessageBox.Show("Bạn chưa nhập địa chỉ");
                 textBoxDiaChi.Focus();
                 return;
-            }  
-            if(textBoxDienThoai.Text.Trim() == string.Empty)
+            }
+            if (textBoxDienThoai.Text.Trim() == string.Empty)
             {
                 MessageBox.Show("Bạn chưa nhập số điện thoại");
                 textBoxDienThoai.Focus();
@@ -244,7 +349,7 @@ namespace BaiTapLon.Forms
             //Thêm khách hàng
             string sqlKH = "Select * from KhachHang where MaKH = '" + textBoxMaKH.Text + "'";
 
-            if(dataProcessor.DataReader(sqlKH).Rows.Count == 0)
+            if (dataProcessor.DataReader(sqlKH).Rows.Count == 0)
             {
 
                 string sqlThemKH = "INSERT INTO KHACHHANG(MaKH, TenKH, DiaChi, DienThoai) VALUES ('"
@@ -254,7 +359,7 @@ namespace BaiTapLon.Forms
             //Thêm hóa đơn
             string sqlThemHD = "INSERT INTO HOADONBAN (MaHDB, NgayBan, TongTien, MaNV, MaKH) VALUES ('"
                 + textBoxSoHD.Text.Trim() + "', '" + dateTimePickerNgayBan.Text.ToString() + "', " + Convert.ToInt64(epTongTien()) + ", '"
-                + textBoxMaNV.Text.Trim() + "', '" +textBoxMaKH.Text.Trim() + "')" ;
+                + textBoxMaNV.Text.Trim() + "', '" + textBoxMaKH.Text.Trim() + "')";
             dataProcessor.DataChange(sqlThemHD);
             //Thêm chi tiết hóa đơn
             foreach (DataGridViewRow row in dataGridViewDSMatHang.Rows)
@@ -266,7 +371,7 @@ namespace BaiTapLon.Forms
                     // Lấy giá trị từng cột trong dòng hiện tại
                     string maHang = row.Cells["MaHang"].Value.ToString();
                     string tenHang = row.Cells["TenHang"].Value.ToString();
-                    decimal donGia = Convert.ToDecimal(row.Cells["DonGia"].Value); 
+                    decimal donGia = Convert.ToDecimal(row.Cells["DonGia"].Value);
                     int soLuongMua = Convert.ToInt32(row.Cells["SoLuong"].Value);
                     decimal giamGia = Convert.ToDecimal(row.Cells["GiamGia"].Value);
                     decimal thanhTien = Convert.ToDecimal(row.Cells["ThanhTien"].Value);
@@ -288,13 +393,20 @@ namespace BaiTapLon.Forms
                 }
 
             }
-            MessageBox.Show("Bạn đã thêm thành công");
+            //MessageBox.Show("Bạn đã thêm thành công");
+            if (MessageBox.Show("Bạn có muốn in hóa đơn không?", "Thông báo!", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                this.InHoaDon();
+            }
             this.lamMoi();
         }
         //In hóa đơn
         private void buttonInHoaDon_Click(object sender, EventArgs e)
         {
-
+            if (textBoxSoHD.Text.Length > 0)
+            {
+                this.InHoaDon();
+            }
         }
         //Làm mới
         private void buttonLamMoi_Click(object sender, EventArgs e)
@@ -304,13 +416,13 @@ namespace BaiTapLon.Forms
         //Thêm mặt hàng
         private void buttonThem_Click(object sender, EventArgs e)
         {
-            if(textBoxMaHang.Text == string.Empty)
+            if (textBoxMaHang.Text == string.Empty)
             {
                 MessageBox.Show("Bạn phải nhập mã hàng");
                 textBoxMaHang.Focus();
                 return;
             }
-            else if(textBoxSoLuong.Text == string.Empty)
+            else if (textBoxSoLuong.Text == string.Empty)
             {
                 MessageBox.Show("Bạn phải nhập số lượng");
                 textBoxSoLuong.Focus();
@@ -336,18 +448,18 @@ namespace BaiTapLon.Forms
         {
             if (textBoxMaHang.Text.Length > 0)
             {
-                if(IsDgvHangHoa(textBoxMaHang.Text.Trim()) == true)
+                if (IsDgvHangHoa(textBoxMaHang.Text.Trim()) == true)
                 {
                     MessageBox.Show("Bạn đã thêm hàng hóa này rồi");
                     textBoxMaHang.Text = string.Empty;
                     return;
-                }   
+                }
                 //Kiểm tra xem hàng hóa có trong database không
                 DataTable dataTable = new DataTable();
                 dataTable = dataProcessor.DataReader("Select TenHH, DonGiaBan" +
                                                     " from DANHMUCHANGHOA" +
                                                     " where MaHH ='" + textBoxMaHang.Text.Trim().ToString() + "'");
-                if(dataTable.Rows.Count > 0)
+                if (dataTable.Rows.Count > 0)
                 {
                     textBoxTenHang.Text = dataTable.Rows[0][0].ToString();
                     textBoxDonGia.Text = dataTable.Rows[0][1].ToString();
@@ -355,7 +467,7 @@ namespace BaiTapLon.Forms
                     textBoxSoLuong.Enabled = true;
                     textBoxGiamGia.Text = string.Empty;
                     textBoxGiamGia.Enabled = false;
-                    textBoxThanhTien.Text = string.Empty ;
+                    textBoxThanhTien.Text = string.Empty;
                 }
                 else
                 {
@@ -370,10 +482,10 @@ namespace BaiTapLon.Forms
         //Khi người dùng nhập xong số lượng
         private void textBoxSoLuong_Leave(object sender, EventArgs e)
         {
-            if(textBoxSoLuong.Text.Trim().Length == 0 || Convert.ToInt16(textBoxSoLuong.Text.ToString()) == 0)
+            if (textBoxSoLuong.Text.Trim().Length == 0 || Convert.ToInt16(textBoxSoLuong.Text.ToString()) == 0)
             {
                 MessageBox.Show("Bạn phải nhập số lượng và số lượng phải lớn hơn 0 !");
-                textBoxSoLuong.Text=string.Empty;
+                textBoxSoLuong.Text = string.Empty;
                 textBoxSoLuong.Focus();
                 textBoxGiamGia.Enabled = false;
                 return;
@@ -385,7 +497,7 @@ namespace BaiTapLon.Forms
                                                     " from DANHMUCHANGHOA" +
                                                     " where MaHH ='" + textBoxMaHang.Text.Trim().ToString() + "'");
                 int SoLuongHH = Convert.ToInt16(dataTable.Rows[0][0].ToString());
-                if( SoLuongHH - Convert.ToInt16(textBoxSoLuong.Text.ToString()) < 0)
+                if (SoLuongHH - Convert.ToInt16(textBoxSoLuong.Text.ToString()) < 0)
                 {
                     MessageBox.Show("Số lượng hàng hóa hiện không đủ");
                     textBoxSoLuong.Text = string.Empty;
@@ -410,7 +522,7 @@ namespace BaiTapLon.Forms
         //Khi người dùng nhập xong giảm giá
         private void textBoxGiamGia_Leave(object sender, EventArgs e)
         {
-            if (textBoxGiamGia.Text.Length > 0 || Convert.ToInt16(textBoxGiamGia.Text.ToString())<100 )
+            if (textBoxGiamGia.Text.Length > 0 || Convert.ToInt16(textBoxGiamGia.Text.ToString()) < 100)
             {
                 long donGia = Convert.ToInt64(textBoxDonGia.Text.Trim());
                 long giamGia = Convert.ToInt64(textBoxGiamGia.Text.Trim());
@@ -446,7 +558,6 @@ namespace BaiTapLon.Forms
             if (IsSDT() == false)
             {
                 MessageBox.Show("Bạn nhập số điện thoại sai");
-                textBoxDienThoai.Focus();
                 return;
             }
             else
@@ -471,8 +582,8 @@ namespace BaiTapLon.Forms
         //Tìm kiếm hóa đơn
         private void buttonTimKiem_Click(object sender, EventArgs e)
         {
-            this.lamMoiTimKiem();
-            if(textBoxTimKiem.Text.Trim().Length == 0)
+
+            if (textBoxTimKiem.Text.Trim().Length == 0)
             {
                 MessageBox.Show("Bạn phải nhập mã hóa đơn để tìm kiếm");
                 textBoxTimKiem.Focus();
@@ -480,6 +591,7 @@ namespace BaiTapLon.Forms
             }
             else
             {
+                this.lamMoiTimKiem();
                 string sqlHDB = "Select HoaDonBan.MaHDB, NgayBan, HOADONBAN.MaNV, TenNV, HOADONBAN.MaKH, TenKH, KhachHang.DiaChi, KhachHang.DienThoai, HOADONBAN.TongTien" +
                     " from HOADONBAN join KHACHHANG on HOADONBAN.MaKH = KHACHHANG.MaKH" +
                     " join NHANVIEN on HOADONBAN.MaNV = NHANVIEN.MaNV" +
@@ -514,7 +626,7 @@ namespace BaiTapLon.Forms
                         " WHERE MaHDB = '" + textBoxSoHD.Text + "'";
                     DataTable dt = new DataTable();
                     dt = dataProcessor.DataReader(sqlCTHDB);
-                 
+
                     if (dt != null && dt.Rows.Count > 0)
                     {
                         foreach (DataRow row in dt.Rows)
@@ -542,11 +654,11 @@ namespace BaiTapLon.Forms
         //Thoát
         private void buttonThoat_Click(object sender, EventArgs e)
         {
-            if(MessageBox.Show("Bạn có muốn thoát không?", "Thông báo!", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            if (MessageBox.Show("Bạn có muốn thoát không?", "Thông báo!", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 this.Close();
-                FormTrangChu formTrangChu = new FormTrangChu();
-                formTrangChu.Show();
+                //FormTrangChu formTrangChu = new FormTrangChu();
+                //formTrangChu.Show();
             }
 
         }
