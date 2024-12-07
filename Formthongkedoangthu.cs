@@ -1,4 +1,5 @@
-﻿using System;
+using BaiTapLon.KetNoiCSDL;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -8,87 +9,93 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Data.SqlClient;
 
-namespace thôngkdt
+
+namespace BaiTapLon.Forms
 {
-    public partial class Form1 : Form
+    public partial class FormThongKeDoanhThu : Form
     {
-        public Form1()
+        ThaoTacVoiCSDL dataProcessor = new ThaoTacVoiCSDL();
+
+        public FormThongKeDoanhThu()
         {
             InitializeComponent();
         }
-        string connectionString = @"Data Source=DESKTOP-9TAMLUV;Initial Catalog=QuanLyBHMayAnh1;Integrated Security=True";
-
-       
-        
-
-        private void Form1_Load(object sender, EventArgs e)
+        private string epTongTien()
         {
-            dataGridView1.AutoGenerateColumns = true;
-            label6.Text = "Tổng doanh thu: 0";
-
+            string tongTienTemp = labelTongDoanhThu.Text;
+            string[] temp = tongTienTemp.Split(' ');
+            return temp[0];
         }
-        private DataTable GetSalesData(DateTime fromDate, DateTime toDate)
+        private void FormThongKeDoanhThu_Load(object sender, EventArgs e)
         {
-            DataTable dataTable = new DataTable();
+            labelTongDoanhThu.Text = "0 VND";
+            dateTimePickerTuNgay.Format = DateTimePickerFormat.Custom;
+            dateTimePickerTuNgay.CustomFormat = "dd/MM/yyyy";
 
-            try
-            {
-                using (SqlConnection connection = new SqlConnection(connectionString))
-                {
-                    string query = @"
-                SELECT h.MaHDB, h.NgayBan, 
-                       ISNULL(ct.SoLuong, 0) AS SoLuong, 
-                       ISNULL(ct.ThanhTien, 0) AS ThanhTien
-                FROM HOADONBAN h
-                LEFT JOIN CHITIETHDB ct ON h.MaHDB = ct.MaHDB
-                WHERE (@FromDate IS NULL OR h.NgayBan >= @FromDate)
-                  AND (@ToDate IS NULL OR h.NgayBan <= @ToDate)";
-
-                    SqlDataAdapter dataAdapter = new SqlDataAdapter(query, connection);
-                    dataAdapter.SelectCommand.Parameters.AddWithValue("@FromDate", fromDate == DateTime.MinValue ? (object)DBNull.Value : fromDate);
-                    dataAdapter.SelectCommand.Parameters.AddWithValue("@ToDate", toDate == DateTime.MinValue ? (object)DBNull.Value : toDate);
-
-                    dataAdapter.Fill(dataTable);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Có lỗi xảy ra khi lấy dữ liệu: " + ex.Message);
-            }
-
-            return dataTable;
+            dateTimePickerDenNgay.Format = DateTimePickerFormat.Custom;
+            dateTimePickerDenNgay.CustomFormat = "dd/MM/yyyy";
+            dataGridViewDSThongKe.Columns.Clear();
+            dataGridViewDSThongKe.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            // Tạo và thêm cột
+            dataGridViewDSThongKe.Columns.Add("MaHDB", "Mã hóa đơn bán");
+            dataGridViewDSThongKe.Columns.Add("NgayBan", "Ngày bán");
+            dataGridViewDSThongKe.Columns.Add("MaNV", "Tên nhân viên");
+            dataGridViewDSThongKe.Columns.Add("TenKH", "Tên khách hàng");
+            dataGridViewDSThongKe.Columns.Add("SoLuong", "Số lượng");
+            dataGridViewDSThongKe.Columns.Add("GiamGia", "Giảm giá");
+            dataGridViewDSThongKe.Columns.Add("ThanhTien", "Thành tiền");
+            dataGridViewDSThongKe.Columns.Add("TenHang", "Tên hàng");
         }
 
-
-        private void button1_Click(object sender, EventArgs e)
+        private void buttonThongKe_Click(object sender, EventArgs e)
         {
-            DateTime fromDate = dateTimePicker1.Value;
-            DateTime toDate = dateTimePicker2.Value;
-
-            // Lấy dữ liệu từ cơ sở dữ liệu
-            DataTable data = GetSalesData(fromDate, toDate);
-
-            if (data.Rows.Count > 0)
+            if (dateTimePickerTuNgay.Value <= dateTimePickerDenNgay.Value)
             {
-                // Hiển thị dữ liệu lên DataGridView
-                dataGridView1.DataSource = data;
-
-                // Tính tổng doanh thu
-                decimal totalRevenue = 0;
-                foreach (DataRow row in data.Rows)
+                string sqlSelect = "SELECT HoaDonBan.MaHDB, NgayBan,HOADONBAN.MaNV, TenKH,CHITIETHDB.SoLuong, GiamGia, ThanhTien,DANHMUCHANGHOA.TenHH" +
+                " FROM HOADONBAN JOIN CHITIETHDB ON HOADONBAN.MaHDB = CHITIETHDB.MaHDB" +
+                " join NHANVIEN on HOADONBAN.MaNV = NHANVIEN.MaNV" +
+                " join KHACHHANG on HOADONBAN.MaKH = KHACHHANG.MaKH" +
+                " join DANHMUCHANGHOA on CHITIETHDB.MaHH = DANHMUCHANGHOA.MaHH" +
+                " WHERE NgayBan <= '";
+                sqlSelect += dateTimePickerDenNgay.Text + "' and NgayBan >= '";
+                sqlSelect += dateTimePickerTuNgay.Text + "'";
+              
+                DataTable dataTable = new DataTable();
+                dataTable = dataProcessor.DataReader(sqlSelect);
+                foreach (DataRow row in dataTable.Rows)
                 {
-                    totalRevenue += Convert.ToDecimal(row["ThanhTien"]);
+                    dataGridViewDSThongKe.Rows.Add(
+                        row["MaHDB"],       // Mã hóa đơn bán
+                        row["NgayBan"],     // Ngày bán
+                        row["MaNV"],        // Mã nhân viên
+                        row["TenKH"],       // Tên khách hàng
+                        row["SoLuong"],     // Số lượng
+                        row["GiamGia"],     // Giảm giá
+                        row["ThanhTien"],   // Thành tiền
+                        row["TenHH"]        // Tên hàng hóa
+                    );
+                    labelTongDoanhThu.Text = Convert.ToString(Convert.ToInt64(epTongTien()) + Convert.ToInt64(row["ThanhTien"])) + " VND";
                 }
-
-                label6.Text = "Tổng doanh thu: " + totalRevenue.ToString("C");
             }
             else
             {
-                MessageBox.Show("Không có dữ liệu cho khoảng thời gian này.");
-                dataGridView1.DataSource = null; // Xóa dữ liệu cũ nếu không có kết quả
+                MessageBox.Show("Từ ngày phải nhỏ hơn đến ngày");
             }
-        
-    }
+
+            
+
+        }
+
+        private void buttonThoat_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
     }
 }
