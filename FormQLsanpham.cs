@@ -1,191 +1,129 @@
-﻿using System;
+using BaiTapLon.KetNoiCSDL;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace qlsp2
+namespace BaiTapLon.Forms
 {
-    public partial class Form1 : Form
+    public partial class FormSanPham : Form
     {
-        string connectionString = @"Data Source=DESKTOP-9TAMLUV;Initial Catalog=QuanLyBHMayAnh1;Integrated Security=True";
-
-
-        public Form1()
+        ThaoTacVoiCSDL dataProcessor = new ThaoTacVoiCSDL();
+        public FormSanPham()
         {
             InitializeComponent();
         }
-        private void Form1_Load(object sender, EventArgs e)
+        private void load()
         {
-            LoadProducts();
-        }
 
-        private void LoadProducts()
-        {
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            dataGridViewDSSanPham.Columns.Clear();
+            dataGridViewDSSanPham.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            // Tạo và thêm cột
+            dataGridViewDSSanPham.Columns.Add("MaHH", "Mã sản phẩm");
+            dataGridViewDSSanPham.Columns.Add("TenHH", "Tên sản phẩm");
+            dataGridViewDSSanPham.Columns.Add("SoLuong", "Số lượng");
+            dataGridViewDSSanPham.Columns.Add("DonGiaNhap", "Đơn giá nhập");
+            dataGridViewDSSanPham.Columns.Add("DonGiaBan", "Đơn giá bán");
+            dataGridViewDSSanPham.Columns.Add("ThoiGianBH", "Thời gian bảo hành");
+
+            DataTable dataTable = new DataTable();
+            string sqlSelect = "select MaHH, TenHH, SoLuong, DonGiaNhap, DonGiaBan, ThoiGianBH\r\n from DANHMUCHANGHOA";
+            dataTable = dataProcessor.DataReader(sqlSelect);
+            foreach (DataRow row in dataTable.Rows)
             {
-                try
-                {
-                    connection.Open();
-                    string query = "SELECT MaHH AS [Mã hàng], TenHH AS [Tên hàng], SoLuong AS [Số lượng], DonGiaNhap AS [Đơn giá nhập], DonGiaBan AS [Đơn giá bán] FROM DANHMUCHANGHOA";
-                    SqlDataAdapter adapter = new SqlDataAdapter(query, connection);
-                    DataTable dataTable = new DataTable();
-                    adapter.Fill(dataTable);
-                    dataGridView1.DataSource = dataTable;
-                    dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Lỗi khi tải dữ liệu: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                dataGridViewDSSanPham.Rows.Add(
+                    row["MaHH"],
+                    row["TenHH"],
+                    row["SoLuong"],
+                    row["DonGiaNhap"],
+                    row["DonGiaBan"],
+                    row["ThoiGianBH"]
+                );
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void FormSanPham_Load(object sender, EventArgs e)
         {
-
+            this.load();
         }
 
-        private void button1_Click_1(object sender, EventArgs e)
+        private void dataGridViewDSSanPham_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (ValidateInput())
+            if (e.RowIndex >= 0 && e.ColumnIndex >= 0)
             {
-                using (SqlConnection connection = new SqlConnection(connectionString))
-                {
-                    try
-                    {
-                        connection.Open();
-                        string query = @"INSERT INTO DANHMUCHANGHOA (MaHH, TenHH, SoLuong, DonGiaNhap, DonGiaBan) 
-                                         VALUES (@MaHH, @TenHH, @SoLuong, @DonGiaNhap, @DonGiaBan)";
-                        SqlCommand command = new SqlCommand(query, connection);
-                        command.Parameters.AddWithValue("@MaHH", textBox1.Text.Trim());
-                        command.Parameters.AddWithValue("@TenHH", textBox2.Text.Trim());
-                        command.Parameters.AddWithValue("@SoLuong", Convert.ToInt32(textBox3.Text.Trim()));
-                        command.Parameters.AddWithValue("@DonGiaNhap", Convert.ToDecimal(textBox4.Text.Trim()));
-                        command.Parameters.AddWithValue("@DonGiaBan", Convert.ToDecimal(textBox5.Text.Trim()));
-
-                        command.ExecuteNonQuery();
-                        MessageBox.Show("Thêm sản phẩm thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                        LoadProducts(); // Làm mới danh sách
-                        ClearInput();  // Xóa dữ liệu trong TextBox
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Lỗi khi thêm sản phẩm: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
+                DataGridViewRow row = dataGridViewDSSanPham.Rows[e.RowIndex];
+                textBoxMaSP.Text = Convert.ToString(row.Cells["MaHH"].Value);         
+                textBoxTenSP.Text = Convert.ToString(row.Cells["TenHH"].Value);       
+                textBoxSoLuong.Text = Convert.ToString(row.Cells["SoLuong"].Value);   
+                textBoxDonGiaNhap.Text = Convert.ToString(row.Cells["DonGiaNhap"].Value); 
+                textBoxDonGiaBan.Text = Convert.ToString(row.Cells["DonGiaBan"].Value);   
+                textBoxThoiGianBH.Text = Convert.ToString(row.Cells["ThoiGianBH"].Value);
             }
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void textBoxDonGiaBan_KeyPress(object sender, KeyPressEventArgs e)
         {
-
-            if (ValidateInput())
-            {
-                using (SqlConnection connection = new SqlConnection(connectionString))
-                {
-                    try
-                    {
-                        connection.Open();
-                        string query = @"UPDATE DANHMUCHANGHOA 
-                                         SET TenHH = @TenHH, SoLuong = @SoLuong, DonGiaNhap = @DonGiaNhap, DonGiaBan = @DonGiaBan 
-                                         WHERE MaHH = @MaHH";
-                        SqlCommand command = new SqlCommand(query, connection);
-                        command.Parameters.AddWithValue("@MaHH", textBox1.Text.Trim());
-                        command.Parameters.AddWithValue("@TenHH", textBox2.Text.Trim());
-                        command.Parameters.AddWithValue("@SoLuong", Convert.ToInt32(textBox3.Text.Trim()));
-                        command.Parameters.AddWithValue("@DonGiaNhap", Convert.ToDecimal(textBox4.Text.Trim()));
-                        command.Parameters.AddWithValue("@DonGiaBan", Convert.ToDecimal(textBox5.Text.Trim()));
-
-                        command.ExecuteNonQuery();
-                        MessageBox.Show("Sửa sản phẩm thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                        LoadProducts(); // Làm mới danh sách
-                        ClearInput();  // Xóa dữ liệu trong TextBox
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Lỗi khi sửa sản phẩm: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-            }
+            if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar)) e.Handled = true;
         }
 
-        private void button3_Click(object sender, EventArgs e)
+        private void textBoxThoiGianBH_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(textBox1.Text))
+            if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar)) e.Handled = true;
+        }
+
+        private void but_Click(object sender, EventArgs e)
+        {
+            textBoxMaSP.Text = string.Empty;
+            textBoxTenSP.Text = string.Empty;
+            textBoxSoLuong.Text = string.Empty;
+            textBoxDonGiaNhap.Text = string.Empty;
+            textBoxDonGiaBan.Text = string.Empty;
+            textBoxThoiGianBH.Text = string.Empty;
+        }
+
+        private void buttonThoat_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void buttonSua_Click(object sender, EventArgs e)
+        {
+            if (textBoxMaSP.Text == string.Empty)
             {
-                MessageBox.Show("Vui lòng chọn sản phẩm cần xóa!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Bạn phải chọn một mặt hàng");
                 return;
             }
-
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            if(textBoxDonGiaBan.Text == string.Empty)
             {
-                try
-                {
-                    connection.Open();
-                    string query = "DELETE FROM DANHMUCHANGHOA WHERE MaHH = @MaHH";
-                    SqlCommand command = new SqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@MaHH", textBox1.Text.Trim());
-
-                    command.ExecuteNonQuery();
-                    MessageBox.Show("Xóa sản phẩm thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                    LoadProducts(); // Làm mới danh sách
-                    ClearInput();  // Xóa dữ liệu trong TextBox
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Lỗi khi xóa sản phẩm: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                MessageBox.Show("Bạn phải nhập đơn giá bán");
+                return;
             }
-        }
-
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex >= 0)
+            if(textBoxThoiGianBH.Text == string.Empty)
             {
-                DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
-                textBox1.Text = row.Cells["Mã hàng"].Value.ToString();
-                textBox2.Text = row.Cells["Tên hàng"].Value.ToString();
-                textBox3.Text = row.Cells["Số lượng"].Value.ToString();
-                textBox4.Text = row.Cells["Đơn giá nhập"].Value.ToString();
-                textBox5.Text = row.Cells["Đơn giá bán"].Value.ToString();
+                MessageBox.Show("Bạn phải nhập thời gian bảo hành");
+                return;
             }
-        }
-        private bool ValidateInput()
-        {
-            if (string.IsNullOrWhiteSpace(textBox1.Text) ||
-                string.IsNullOrWhiteSpace(textBox2.Text) ||
-                string.IsNullOrWhiteSpace(textBox3.Text) ||
-                string.IsNullOrWhiteSpace(textBox4.Text) ||
-                string.IsNullOrWhiteSpace(textBox5.Text))
+            string sqlUpdate = "Update DanhMucHangHoa set DonGiaBan=";
+            sqlUpdate += Convert.ToInt64(textBoxDonGiaBan.Text) + ", ThoiGianBH = ";
+            sqlUpdate += Convert.ToInt64(textBoxThoiGianBH.Text) + " where MaHH ='";
+            sqlUpdate += textBoxMaSP.Text + "'";
+            if(MessageBox.Show("Bạn có muốn sửa không","Thông báo",MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
-                MessageBox.Show("Vui lòng nhập đầy đủ thông tin!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return false;
+                dataProcessor.DataChange(sqlUpdate);
+                MessageBox.Show("Thành công");
+                this.load();
+                textBoxMaSP.Text = string.Empty;
+                textBoxTenSP.Text = string.Empty;
+                textBoxSoLuong.Text = string.Empty;
+                textBoxDonGiaNhap.Text = string.Empty;
+                textBoxDonGiaBan.Text = string.Empty;
+                textBoxThoiGianBH.Text = string.Empty;
             }
-
-            if (!int.TryParse(textBox3.Text, out _) || !decimal.TryParse(textBox4.Text, out _) || !decimal.TryParse(textBox5.Text, out _))
-            {
-                MessageBox.Show("Số lượng và giá phải là số hợp lệ!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return false;
-            }
-
-            return true;
-        }
-        private void ClearInput()
-        {
-            textBox1.Clear();
-            textBox2.Clear();
-            textBox3.Clear();
-            textBox4.Clear();
-            textBox5.Clear();
         }
     }
 }
